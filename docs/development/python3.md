@@ -1,10 +1,10 @@
 
-# Syntax
+## Syntax
 
-## Variable assignment
+### Variable assignment
 
 
-```python3
+```python
 # Single variable assignment
 index = 0
 
@@ -21,7 +21,7 @@ a, b, c = 1, True, "HaHa"
 
 Use `type()` to determine variable type
 
-```python3
+```python
 type(index) # int
 
 ```
@@ -32,7 +32,7 @@ Python3 has 6 basic variable types
 
 - Number: 3 detailed types
 
-```python3
+```python
 # int
 var1, var2, var3, var4 = 1, -1, 0o22, 0x22
 var5, var6 = 51924361L, -4721885298529L
@@ -47,7 +47,7 @@ var10 = -5e+3j
 
 - String: Consists of numbers, letters, underlines
 
-```python3
+```python
 s = 'abcdef'
 s[0 : -1]  # s[begin, end], 'abcde', regardless of the last element
 s[1 : -1 : 2]  #  s[begin, end, step], 'bd'
@@ -56,14 +56,14 @@ s[1 : -1 : 2]  #  s[begin, end, step], 'bd'
 
 - List
 
-```python3
+```python
 list = [ 'runoob', 786 , 2.23, 'john', 70.2 ]
 
 ```
 
 - Tuple
 
-```python3
+```python
 # Cannot be reassigned value
 tuple = ( 'runoob', 786 , 2.23, 'john', 70.2 )
 
@@ -71,7 +71,7 @@ tuple = ( 'runoob', 786 , 2.23, 'john', 70.2 )
 
 - Dictionary
 
-```python3
+```python
 dict = {'name': 'runoob','code':6734, 'dept': 'sales'}
 
 ```
@@ -81,7 +81,7 @@ dict = {'name': 'runoob','code':6734, 'dept': 'sales'}
 ## Functions
 
 
-```python3
+```python
 def least_difference(a, b, c = 3):
     """Return the smallest difference between any two numbers
     among a, b and c.
@@ -99,7 +99,7 @@ def least_difference(a, b, c = 3):
 ## Condition
 
 
-```python3
+```python
 def inspect(x):
     if x == 0:
         print(x, "is zero")

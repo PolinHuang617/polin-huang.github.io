@@ -1,8 +1,8 @@
 
-# Add GitHub hosts
+## Add GitHub hosts
 
 
-```
+```shell
 sudo vim /etc/hosts
 
 # GitHub Host Start
@@ -44,18 +44,18 @@ sudo vim /etc/hosts
 
 ```
 
-# Download Vundle
+## Download Vundle
 
 
-```bash
+```shell
 git clone https://e.coding.net/paddyhuang/linux-source-code/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 
 ```
 
-# Download dependencies
+## Download dependencies
 
 
-```bash
+```shell
 # node / npm
 curl -sL install-node.now.sh | sudo bash
 
@@ -73,7 +73,7 @@ pip3 install -u jedi-language-server
 
 ```
 
-# Compose .vimrc
+## Compose .vimrc
 
 
 ```
@@ -158,7 +158,7 @@ let g:UltiSnipsEditSplit="vertical"
 
 
 
-# Coc.vim packages
+## Coc.vim packages
 
 
 ```
