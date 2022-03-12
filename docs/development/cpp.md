@@ -71,7 +71,9 @@ decltype(a) c;  // delctype remains const property: const int c;
 ```
 
 > `const` and `volatile` are antonym.
-> `const' means variable is readonly.
+
+> `const` means variable is readonly.
+
 > `volatile` means variable is easy to be changed, which means compiler will keep it in cpu register to optimize performance.
 
 ```cpp
