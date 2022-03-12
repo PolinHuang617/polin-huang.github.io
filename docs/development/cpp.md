@@ -2,51 +2,103 @@
 
 > [Mocrosoft C++ Reference](https://docs.microsoft.com/zh-cn/cpp/cpp/cpp-language-reference?view=msvc-170)
 
+> [Cplusplus Reference](https://www.cplusplus.com/)
+
 ### Variables
 
 #### Fundamental data types
 
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-qvlf{border-color:inherit;font-family:"Comic Sans MS", cursive, sans-serif !important;font-size:16px;text-align:left;
-  vertical-align:top}
-.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
-</style>
-<table class="tg">
+<table>
 <thead>
   <tr>
-    <th class="tg-qvlf"></th>
-    <th class="tg-0pky"></th>
-    <th class="tg-0pky"></th>
-    <th class="tg-0pky"></th>
-    <th class="tg-0pky"></th>
+    <th>Group</th>
+    <th colspan="2">Type names</th>
+    <th colspan="2">Notes on size / Precision</th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
+    <td rowspan="4">Character types</td>
+    <td colspan="2">char</td>
+    <td colspan="2">Exactly one byte. At least 8 bits</td>
   </tr>
   <tr>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
+    <td colspan="2">char16_t</td>
+    <td colspan="2">&gt; char. At least 16 bits</td>
   </tr>
   <tr>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
-    <td class="tg-0pky"></td>
+    <td colspan="2">char32_t</td>
+    <td colspan="2">&gt; char16_t. At least 32 bits</td>
+  </tr>
+  <tr>
+    <td colspan="2">wchar_t</td>
+    <td colspan="2">Can represent the largest supported char set</td>
+  </tr>
+  <tr>
+    <td rowspan="5">Integer types signed</td>
+    <td colspan="2">signed char</td>
+    <td colspan="2">= char. At least 8 bits</td>
+  </tr>
+  <tr>
+    <td colspan="2">signed short</td>
+    <td colspan="2">&gt; char. At least 16 bits</td>
+  </tr>
+  <tr>
+    <td colspan="2">signed int</td>
+    <td colspan="2">&gt;= short. At 16 bits</td>
+  </tr>
+  <tr>
+    <td colspan="2">signed long</td>
+    <td colspan="2">&gt; int. At least 32 bits</td>
+  </tr>
+  <tr>
+    <td colspan="2">signed long long</td>
+    <td colspan="2">&gt; long. At least 64 bits</td>
+  </tr>
+  <tr>
+    <td rowspan="5">Integer types unsigned</td>
+    <td colspan="2">unsigned char</td>
+    <td colspan="2" rowspan="5">Same size as their signed counterparts</td>
+  </tr>
+  <tr>
+    <td colspan="2">unsigned short</td>
+  </tr>
+  <tr>
+    <td colspan="2">unsigned int</td>
+  </tr>
+  <tr>
+    <td colspan="2">unsigned long</td>
+  </tr>
+  <tr>
+    <td colspan="2">unsigned long long</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Floating-point types</td>
+    <td colspan="2">float</td>
+    <td colspan="2"></td>
+  </tr>
+  <tr>
+    <td colspan="2">double</td>
+    <td colspan="2">Precision &gt; float</td>
+  </tr>
+  <tr>
+    <td colspan="2">long double</td>
+    <td colspan="2">Precision &gt; double</td>
+  </tr>
+  <tr>
+    <td>Boolean types</td>
+    <td colspan="2">bool</td>
+    <td colspan="2"></td>
+  </tr>
+  <tr>
+    <td>Void type</td>
+    <td colspan="2">void</td>
+    <td colspan="2">No storage</td>
+  </tr>
+  <tr>
+    <td>Null pointer</td>
+    <td colspan="2">decltype(nullptr)</td>
+    <td colspan="2"></td>
   </tr>
 </tbody>
 </table>
