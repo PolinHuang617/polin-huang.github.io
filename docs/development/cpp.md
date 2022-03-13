@@ -165,7 +165,7 @@ auto b = (int*)a;
 
 ##### `static_cast`
 
-1. Process conversion during *compiling*. If conversion failed, throw a compiling error. In runtime period, it doesn't incur type-safety check like `dynamic_cast`.
+1. Process conversion during **compiling**. If conversion failed, throw a compiling error. In runtime period, it doesn't incur type-safety check like `dynamic_cast`.
 
 2. Mainly usage:
     - Built-in type conversion, e.g. `short` => `int`, `int` => `double`, etc.
@@ -174,7 +174,7 @@ auto b = (int*)a;
     - Convert class with converting constructor and type-casting function.
 
 3. Cannot convert:
-    - No-related concrete pointer, e.g. `int*` => `double*`, because their storage structure in memory is totally different.
+    - No-related concrete **pointer**, e.g. `int*` => `double*`, because their storage structure in memory is totally different.
     - `int` and pointer, becuase a user-defined number seldom correctly mapping to a valid memory address.
 	- convert `const` or `volatile` => `non-const` or `non-volatile` type.
 
@@ -183,31 +183,45 @@ auto b = (int*)a;
     #include <cstdlib>
     using namespace std;
 
-    class Complex{
+    class Complex {
     public:
-        Complex(double real = 0.0, double imag = 0.0): m_real(real), m_imag(imag){ } // 默认构造函数
-        inline Complex(int num) { m_real = static_cast<double>(num); } // 转换构造函数
+        // 默认构造函数
+        Complex(double real = 0.0, double imag = 0.0) 
+		        : m_real(real), m_imag(imag) { }
+
+        // 转换构造函数
+        inline Complex(int num) { m_real = static_cast<double>(num); }
+
     public:
-        inline operator double() const { return m_real; }  //类型转换函数
+        //类型转换函数
+        inline operator double() const { return m_real; }
+
     private:
         double m_real;
         double m_imag;
     };
 
-    int main(){
+    int main() {
         //下面是正确的用法
         int m = 100;
         Complex c(12.5, 23.8);
         long n = static_cast<long>(m);  //宽转换，没有信息丢失
         char ch = static_cast<char>(m);  //窄转换，可能会丢失信息
-        int *p1 = static_cast<int*>( malloc(10 * sizeof(int)) );  //将void指针转换为具体类型指针
-        void *p2 = static_cast<void*>(p1);  //将具体类型指针，转换为void指针
+
+        //将void指针转换为具体类型指针
+        int *p1 = static_cast<int*>( malloc(10 * sizeof(int)) );
+
+        //将具体类型指针，转换为void指针
+        void *p2 = static_cast<void*>(p1);
         double real= static_cast<double>(c);  //调用类型转换函数
         Complex c1 = static_cast<Complex>(m);
 
         //下面的用法是错误的
-        // float *p3 = static_cast<float*>(p1);  //不能在两个具体类型的指针之间进行转换
-        // p3 = static_cast<float*>(0X2DF9);  //不能将整数转换为指针类型
+        //不能在两个具体类型的指针之间进行转换
+        // float *p3 = static_cast<float*>(p1);
+
+        //不能将整数转换为指针类型
+        // p3 = static_cast<float*>(0X2DF9);
     
         return 0;
     }
@@ -216,6 +230,23 @@ auto b = (int*)a;
 ##### `dynamic_cast`
 
 ##### `const_cast`
+
+Convert `const` or `volatile` to `non-const` or `non-volatile`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    const int n = 100;
+    int *p = const_cast<int*>(&n);
+    *p = 234;
+    cout<<"n = "<<n<<endl;
+    cout<<"*p = "<<*p<<endl;
+
+    return 0;
+}
+```
 
 ##### `reinterpret_cast`
 
