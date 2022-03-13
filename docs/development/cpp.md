@@ -1,3 +1,7 @@
+---
+title: C++ Notes
+---
+
 ## C++ Notes
 
 > [Mocrosoft C++ Reference](https://docs.microsoft.com/zh-cn/cpp/cpp/cpp-language-reference?view=msvc-170)
@@ -384,7 +388,7 @@ int main() {
     }
 	```
 
-	![Inheritance chain](http://c.biancheng.net/cpp/uploads/allimg/170220/1-1F220145TLW.jpg)
+	![Inheritance chain](cpp/inheritance_chain.jpg)
 
 ##### `reinterpret_cast`
 
