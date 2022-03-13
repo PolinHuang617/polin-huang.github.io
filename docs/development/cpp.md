@@ -150,6 +150,8 @@ For reference, `auto` still discards variable's qualified property, deducing var
 
 #### Type conversion
 
+> [Reference](http://c.biancheng.net/cpp/biancheng/view/3297.html)
+
 ##### Implicit casting
 
 ```cpp
@@ -227,8 +229,6 @@ auto b = (int*)a;
     }
     ```
 
-##### `dynamic_cast`
-
 ##### `const_cast`
 
 Convert `const` or `volatile` to `non-const` or `non-volatile`
@@ -248,7 +248,176 @@ int main() {
 }
 ```
 
+##### `dynamic_cast`
+
+1. `dynamic_cast<newType>(expr)` 
+
+    `newType` and `expr` must be pointer or reference at the same time, meaning that `dynamic_cast` can only convert pointer or reference, instead of `int`, `double`, `class` or `struct`.
+
+2. `dynamic_cast` is opposite with `static_cast`, the former processes type-safety check and conversion using RTTI during runtime.
+
+3. `dynamic_cast` can achieve both upcasting and downcasting, but needs **base class contains virtual function**. After converted, program reaches variable function according to **virtual function table**.
+
+4. Upcasting (Base <= Derived)
+
+    Unconditionally succeed, because RTTI can always find effective base class for derived class in the inheritance chain. Type-safety check won't be triggered at this scenario, at which `dynamic_cast` is like `static_cast`.
+
+    ```cpp
+    #include <iostream>
+    #include <iomanip>
+    using namespace std;
+    
+    class Base{
+    public:
+        Base(int a = 0): m_a(a){ }
+        int get_a() const{ return m_a; }
+        virtual void func() const { }
+    protected:
+        int m_a;
+    };
+    
+    class Derived: public Base{
+    public:
+        Derived(int a = 0, int b = 0): Base(a), m_b(b){ }
+        int get_b() const { return m_b; }
+    private:
+        int m_b;
+    };
+    
+    int main(){
+        //情况1
+        Derived *pd1 = new Derived(35, 78);
+        Base *pb1 = dynamic_cast<Derived*>(pd1);
+        cout<<"pd1 = "<<pd1<<", pb1 = "<<pb1<<endl;
+        cout<<pb1->get_a()<<endl;
+        pb1->func();
+    
+        //情况2
+        int n = 100;
+        Derived *pd2 = reinterpret_cast<Derived*>(&n);
+        Base *pb2 = dynamic_cast<Base*>(pd2);
+        cout<<"pd2 = "<<pd2<<", pb2 = "<<pb2<<endl;
+        cout<<pb2->get_a()<<endl;  //输出一个垃圾值
+        pb2->func();  //内存错误
+    
+        return 0;
+    }
+	```
+
+5. Downcasting (Base => Derived)
+
+    Program, according to inheritance chain, determins conversion successful or not.
+
+    ```cpp
+    #include <iostream>
+    using namespace std;
+    
+    class A{
+    public:
+        virtual void func() const { cout<<"Class A"<<endl; }
+    private:
+        int m_a;
+    };
+    
+    class B: public A{
+    public:
+        virtual void func() const { cout<<"Class B"<<endl; }
+    private:
+        int m_b;
+    };
+    
+    class C: public B{
+    public:
+        virtual void func() const { cout<<"Class C"<<endl; }
+    private:
+        int m_c;
+    };
+    
+    class D: public C{
+    public:
+        virtual void func() const { cout<<"Class D"<<endl; }
+    private:
+        int m_d;
+    };
+    
+    int main(){
+        A *pa = new A();
+        B *pb;
+        C *pc;
+       
+        //情况1
+        pb = dynamic_cast<B*>(pa);  //向下转型失败
+        if(pb == NULL){
+            cout<<"Downcasting failed: A* to B*"<<endl;
+        }else{
+            cout<<"Downcasting successfully: A* to B*"<<endl;
+            pb -> func();
+        }
+        pc = dynamic_cast<C*>(pa);  //向下转型失败
+        if(pc == NULL){
+            cout<<"Downcasting failed: A* to C*"<<endl;
+        }else{
+            cout<<"Downcasting successfully: A* to C*"<<endl;
+            pc -> func();
+        }
+       
+        cout<<"-------------------------"<<endl;
+       
+        //情况2
+        pa = new D();  //向上转型都是允许的
+        pb = dynamic_cast<B*>(pa);  //向下转型成功
+        if(pb == NULL){
+        cout<<"Downcasting failed: A* to B*"<<endl;
+        }else{
+            cout<<"Downcasting successfully: A* to B*"<<endl;
+            pb -> func();
+        }
+        pc = dynamic_cast<C*>(pa);  //向下转型成功
+        if(pc == NULL){
+            cout<<"Downcasting failed: A* to C*"<<endl;
+        }else{
+            cout<<"Downcasting successfully: A* to C*"<<endl;
+            pc -> func();
+        }
+       
+        return 0;
+    }
+	```
+
+	![Inheritance chain](http://c.biancheng.net/cpp/uploads/allimg/170220/1-1F220145TLW.jpg)
+
 ##### `reinterpret_cast`
+
+As its name implies, **re-interpret** binary bits in memory, regardless of conversion rules for data, risking a lot.
+
+`reinterpret_cast` is often as supplement of `static_cast` to force converting variables.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class A{
+public:
+    A(int a = 0, int b = 0): m_a(a), m_b(b){}
+private:
+    int m_a;
+    int m_b;
+};
+
+int main(){
+    //将 char* 转换为 float*
+    char str[]="http://c.biancheng.net";
+    float *p1 = reinterpret_cast<float*>(str);
+    cout<<*p1<<endl;
+    //将 int 转换为 int*
+    int *p = reinterpret_cast<int*>(100);
+    //将 A* 转换为 int*
+    p = reinterpret_cast<int*>(new A(25, 96));
+    cout<<*p<<endl;
+   
+    return 0;
+}
+```
 
 ### Flow control
 
