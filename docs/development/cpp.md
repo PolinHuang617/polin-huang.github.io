@@ -106,10 +106,16 @@
 #### Type deduction: `auto` and `decltype`
 
 ```cpp
+#include <iostream>
+#include <typeinfo>
+
 int a = 0;
 auto b = a; // same as: int b = a;
 
 decltype(a) b; // same as: int b;
+
+std::cout << typeif(a).name() << std::endl;
+std::cout << typeif(b).name() << std::endl;
 ```
 
 ##### `auto` vs. `decltype`
@@ -141,6 +147,20 @@ decltype(ra) ra3 = 30;
 ```
 
 For reference, `auto` still discards variable's qualified property, deducing variable type to its origin type (`int`). Butt `decltype` remains its reference property(`int &`).
+
+#### Type conversion
+
+##### Implicit casting
+
+##### Explicit casting
+
+##### `static_casti`
+
+##### `dynamic_cast`
+
+##### `const_cast`
+
+##### `reinterpret_cast`
 
 ### Flow control
 
@@ -229,9 +249,141 @@ for (const auto &iter : vec) {
 
 ### Functions
 
-### Overloads and Template
+#### Normal function
+
+- Declaration
+
+```cpp
+// Before C++11
+return_value function_name(para1, para2, ...);
+
+// C++11 or newer
+auto function_name(para1, para2, ...) -> return_value;
+```
+
+- Definition
+
+```cpp
+// Before C++11
+return_value function_name(para1, para2, ...) {
+    // code ...
+
+    return ...;
+}
+
+// C++11 or newer
+auto function_name(para1, para2, ...) -> return_value {
+    // code ...
+
+    return ...;
+}
+```
+
+- Call
+
+```cpp
+receptor = function_name(para1, para2, ...);
+```
+
+#### `main` function
+
+The entry of program.
+
+```cpp
+// Before C++11
+int main(int argv, char** argc) {
+
+    return ...;
+}
+
+// C++11 or newer
+auto main(int argv, char** argc) -> int {
+
+    return ...;
+}
+```
+
+About return value of `main`:
+
+|     Value    | Description                                                         |
+|:------------:|---------------------------------------------------------------------|
+|       0      | The program was successful                                          |
+| EXIT_SUCCESS | The program was successful (same as above). Defined in `<cstdlib>`. |
+| EXIT_FAILURE | The program failed. Defined in `<cstdlib>`.                         |
+
+#### `inline` function
+
+- Declaration
+
+```cpp
+// Before C++11
+inline return_value function_name(para1, para2, ...);
+
+// C++11 or newer
+inline auto function_name(para1, para2, ...) -> return_value;
+```
+
+- Definition
+
+```cpp
+// Before C++11
+inline return_value function_name(para1, para2, ...) {
+
+    return ...;
+}
+
+// C++11 or newer
+inline auto function_name(para1, para2, ...) -> return_value {
+
+    return ...;
+}
+```
+
+#### lambda function
+
+- Definition
+
+```cpp
+auto function_name = [capture_list](para1, para2, ...) -> return_value {
+
+    return ...;
+}
+```
+
+In capture_list, `=` means parameters passed by value, `&` means that passed by reference.
+
+Capture value may entail parameter duplication occurred, when that is complicated data type will take much time to archive duplicating process.
+
+The cost of capture reference is much cheaper, thanks of reference machanism.
 
 ### Try / Catch / Exception
+
+```cpp
+auto main(int argc, char **argv) -> int {
+    try {
+        // code ...
+        throw std::exception("Built-in error type");
+        // code ...
+        throw customException("custom error type");
+
+        return EXIT_SUCCESS;
+    }
+    catch(const std::exception &e) {
+        LOG_ERROR(e.what());
+        return EXIT_FAILURE;
+    }
+    catch(const customException &c) {
+        LOG_ERROR(c.what());
+        return EXIT_FAILURE;
+    }
+    catch(...) {
+        LOG_ERROR("Unknown error type");
+        return EXIT_FAILURE;
+    }
+}
+```
+
+### Overloads and Template
 
 ### Pointer / Reference / Dynamic memory
 
