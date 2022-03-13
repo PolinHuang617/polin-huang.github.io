@@ -152,9 +152,33 @@ For reference, `auto` still discards variable's qualified property, deducing var
 
 ##### Implicit casting
 
+```cpp
+short a = 1;
+int b = a;
+```
+
 ##### Explicit casting
 
-##### `static_casti`
+```cpp
+auto b = (int*)a;
+```
+
+##### `static_cast`
+
+1. Process conversion during *compiling*. If conversion failed, throw a compiling error. In runtime period, it doesn't incur type-safety check like `dynamic_cast`.
+
+2. Mainly usage:
+    - Built-in type conversion, e.g. `short` => `int`, `int` => `double`, etc.
+    - Upcasting (pointer-to-derived => pointer-to-base).
+    - `void*` => concrete pointer, e.g. `void*` => `int*`, `cahr*` => `void*`, etc.
+    - Convert class with converting constructor and type-casting function.
+
+3. Cannot convert:
+    - No-related convrete pointer, e.g. `int*` => `double*`, because their storage structure in memory is totally different.
+    - `int` and pointer, becuase a user-defined number 
+    ```cpp
+    
+    ```
 
 ##### `dynamic_cast`
 
