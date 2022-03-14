@@ -1002,7 +1002,203 @@ auto main(int argc, char **argv) -> int {
 
 ### Date
 
+C++ used `<ctime>` to instantial time-relatived function, which is `tm` and `time_t`.
+
+```cpp
+struct tm {
+  int tm_sec;   // 秒，正常范围从 0 到 59，但允许至 61
+  int tm_min;   // 分，范围从 0 到 59
+  int tm_hour;  // 小时，范围从 0 到 23
+  int tm_mday;  // 一月中的第几天，范围从 1 到 31
+  int tm_mon;   // 月，范围从 0 到 11
+  int tm_year;  // 自 1900 年起的年数
+  int tm_wday;  // 一周中的第几天，范围从 0 到 6，从星期日算起
+  int tm_yday;  // 一年中的第几天，范围从 0 到 365，从 1 月 1 日算起
+  int tm_isdst; // 夏令时
+};
+```
+
+- `time_t`
+
+```cpp
+#include <iostream>
+#include <ctime>
+
+auto main(int argc, char **argv) -> int {
+    try {
+        // time based on current system clock
+        std::time_t now = std::time(0);
+
+        // convert time_t => char*
+        char* time_string = std::ctime(&now);
+
+        std::cout << "Local time: " << time_string << std::endl;
+
+        std::tm *gmTime = std::gmtime(&now);
+        
+        time_string = std::asctime(gmTime);
+
+        std::cout << "UTC time: " << time_string << std::endl;
+
+        std::cout << "date(" << gmTime->tm_zone << "): " 
+                  << (1900 + gmTime->tm_year) << "-" << (1 + gmTime->tm_mon) << "-" << gmTime->tm_mday 
+                  << std::endl;
+
+        return EXIT_SUCCESS;
+    }
+    catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (...) {
+        std::cerr << "Unkwon error." << std::endl;
+        return EXIT_FAILURE;
+    }
+}
+```
+
 ### File I/O
+
+- `ifstream`: Stream class to read from files.
+- `ofstream`: Stream class to write to files.
+- `fstream`: Stream class to both read and write from/to files.
+
+#### Open a file
+
+`open(filename, mode)`
+
+| Mode        | Description                                                                                                                  |
+|-------------|------------------------------------------------------------------------------------------------------------------------------|
+| ios::in     | Open for input operations.                                                                                                   |
+| ios::out    | Open for output operations.                                                                                                  |
+| ios::binary | Open in binary mode.                                                                                                         |
+| ios::ate    | Set the initial position at the end of the file. If this flag is not set, the initial position is the beginning of the file. |
+| ios::app    | All output operations are performed at the end of the file, appending content.                                               |
+
+- Text file
+
+    - Read
+
+    ```cpp
+    std::string line;
+    std::ifstream infile;
+    infile.open("README.txt");
+
+    if (infile.is_open()) {
+        while ( std::getline(infile, line) ) {
+            // proceeding code ... 
+            std::cout << line << std::endl;
+        }
+
+        infile.close();
+    }
+    ```
+
+    - Write
+
+    ```cpp
+    std::ofstream outfile;
+    outfile.open("README.txt", ios::out | ios::app);
+    
+    if (outfile.is_open()) { 
+        // proceeding code ... 
+        outfile << "test ...";
+    
+        outfile.close();
+    }
+    else {
+        std::cerr << "Unable to open file: " << outfile;
+    }
+    ```
+
+- Binary file
+
+    - Write
+
+    ```cpp
+    #include <iostream>
+    #include <fstream>
+    #include <cstring>
+    
+    auto main(int argc, char **argv) -> int {
+        try {
+            char *memblock = new char[10000];
+            std::memset(memblock, 'A', 10000 * sizeof(char));
+    
+            std::ofstream outFile("example.bin", std::ios::out | std::ios::binary);
+            if (outFile.is_open()) {
+    
+                // Write method 1
+                //for(std::size_t i = 0; i < 10000; ++i) {
+                    //outFile << memblock[i];
+                //}
+    
+                // Write method 2
+                outFile.write(memblock, 10000);
+                outFile.close();
+            }
+            else {
+                std::cerr << "Unable to open file." << std::endl;
+            }
+    
+            delete[] memblock;
+    
+            return EXIT_SUCCESS;
+        }
+        catch (const std::exception &e) {
+            std::cerr << e.what() << std::endl;
+            return EXIT_FAILURE;
+        }
+        catch (...) {
+            std::cerr << "Unkwon error." << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+    ```
+
+    - Read
+
+    ```cpp
+    #include <iostream>
+    #include <fstream>
+    
+    auto main(int argc, char **argv) -> int {
+        try {
+            // Open bin file and put file cursor to file end.
+            std::ifstream inFile("example.bin", std::ios::in | std::ios::binary | std::ios::ate);
+            if (inFile.is_open()) {
+                // get cursor position(file end), which is the file size.
+                std::streampos fileSize = inFile.tellg();
+                // set receptor array.
+                char *memblock = new char[fileSize];
+                // Move file cursor to file beginning
+                inFile.seekg(0, std::ios::beg);
+                // Read binary file.
+                inFile.read(memblock, fileSize);
+                // Print file content.
+                for (std::size_t i = 0; i < fileSize; ++i) 
+                    std::cout << memblock[i];
+                std::cout << std::endl;
+                // Close file.
+                inFile.close();
+                delete[] memblock;
+            }
+            else {
+                std::cerr << "Unable to open file." << std::endl;
+            }
+    
+            return EXIT_SUCCESS;
+        }
+        catch (const std::exception &e) {
+            std::cerr << e.what() << std::endl;
+            return EXIT_FAILURE;
+        }
+        catch (...) {
+            std::cerr << "Unkwon error." << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+    ```
 
 ### Precompile commands
 
