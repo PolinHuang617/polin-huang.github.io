@@ -56,8 +56,12 @@ git clone https://e.coding.net/paddyhuang/linux-source-code/Vundle.vim.git ~/.vi
 
 
 ```shell
+# Using apt
+sudo apt install nodejs npm
 # node / npm
 curl -sL install-node.now.sh | sudo bash
+# Or install nvm
+curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 
 # coc.vim
 # https://github.com/neoclide/coc.nvim/wiki/Language-servers

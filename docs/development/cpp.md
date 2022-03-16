@@ -1333,6 +1333,37 @@ auto main() -> int {
 
 ### Multi-process
 
+```cpp
+nclude <iostream>
+#include <sys/types.h>
+#include <unistd.h>
+
+auto main(int argc, char **argv) -> int {
+    // fork() return 0 in child process
+    //        reutrn child pid in father process
+    auto pid = fork();
+
+    std::cout << "pid: " << pid << std::endl;
+    if (0 > pid) {
+        std::cerr << "fork failed." << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    if (0 == pid) {  // child process
+        std::cout << "child pid: " << getpid()
+            << ", ppid: " << getppid() << std::endl;
+
+        exit(EXIT_SUCCESS);
+    }
+    else {  // father process
+        std::cout << "father pid: " << getpid()
+            << ", ppid: " << getppid() << std::endl;
+    }
+
+    return EXIT_SUCCESS;
+}                                                  
+```
+
 ### Multi-threading
 
 #### `std::thread`
