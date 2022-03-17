@@ -1,12 +1,80 @@
----
-title: C++ Notes
----
-
 ## C++ Notes
 
 > [Mocrosoft C++ Reference](https://docs.microsoft.com/zh-cn/cpp/cpp/cpp-language-reference?view=msvc-170)
 
 > [Cplusplus Reference](https://www.cplusplus.com/)
+
+<!-- vim-markdown-toc GFM -->
+
+		* [Variables](#variables)
+			* [Fundamental data types](#fundamental-data-types)
+			* [Type deduction: `auto` and `decltype`](#type-deduction-auto-and-decltype)
+				* [`auto` vs. `decltype`](#auto-vs-decltype)
+			* [Type conversion](#type-conversion)
+				* [Implicit casting](#implicit-casting)
+				* [Explicit casting](#explicit-casting)
+				* [`static_cast`](#static_cast)
+				* [`const_cast`](#const_cast)
+				* [`dynamic_cast`](#dynamic_cast)
+				* [`reinterpret_cast`](#reinterpret_cast)
+		* [Flow control](#flow-control)
+			* [`condition ? expr1 : expr2`](#condition--expr1--expr2)
+			* [`if-else`](#if-else)
+			* [`switch`](#switch)
+			* [`while`](#while)
+			* [`for`](#for)
+		* [Functions](#functions)
+			* [Normal function](#normal-function)
+			* [`main` function](#main-function)
+			* [`inline` function](#inline-function)
+			* [lambda function](#lambda-function)
+		* [Try / Catch / Exception](#try--catch--exception)
+		* [Overloads and Template](#overloads-and-template)
+			* [Overloaded function](#overloaded-function)
+			* [Function template](#function-template)
+			* [Non-type template arguments](#non-type-template-arguments)
+		* [Pointer / Reference / Dynamic memory](#pointer--reference--dynamic-memory)
+			* [Pointer & reference](#pointer--reference)
+* [include <iostream>](#include-iostream)
+* [include <cstdlib>](#include-cstdlib)
+* [include <iostream>](#include-iostream-1)
+* [include <cstdlib>](#include-cstdlib-1)
+* [include <cstring>](#include-cstring)
+* [include <cstdlib>](#include-cstdlib-2)
+* [include <iostream>](#include-iostream-2)
+* [include <cstdlib>](#include-cstdlib-3)
+* [include <iostream>](#include-iostream-3)
+* [include <memory>](#include-memory)
+* [include <iostream>](#include-iostream-4)
+* [include <memory>](#include-memory-1)
+* [include <iostream>](#include-iostream-5)
+* [include <memory>](#include-memory-2)
+* [include <iostream>](#include-iostream-6)
+* [include <ctime>](#include-ctime)
+* [include <iostream>](#include-iostream-7)
+* [if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)](#if-definedwin32--defined_win32--defined__win32__--defined__nt__)
+* [elif __APPLE__](#elif-__apple)
+* [elif __linux__](#elif-__linux)
+* [elif __unix__ // all unices not caught above](#elif-__unix__--all-unices-not-caught-above)
+* [elif defined(_POSIX_VERSION)](#elif-defined_posix_version)
+* [else](#else)
+* [error "Unknown compiler"](#error-unknown-compiler)
+* [endif](#endif)
+* [ifdef DEBUG](#ifdef-debug)
+* [else](#else-1)
+* [endif](#endif-1)
+* [include <iostream>](#include-iostream-8)
+* [include <csignal>](#include-csignal)
+* [include <unistd.h>](#include-unistdh)
+* [include <iostream>](#include-iostream-9)
+* [include <csignal>](#include-csignal-1)
+* [include <unistd.h>](#include-unistdh-1)
+* [include <iostream>](#include-iostream-10)
+* [include <thread>](#include-thread)
+			* [Threads communication](#threads-communication)
+		* [TCP / UDP / Web](#tcp--udp--web)
+
+<!-- vim-markdown-toc -->
 
 ### Variables
 
@@ -1334,34 +1402,6 @@ auto main() -> int {
 ### Multi-process
 
 ```cpp
-nclude <iostream>
-#include <sys/types.h>
-#include <unistd.h>
-
-auto main(int argc, char **argv) -> int {
-    // fork() return 0 in child process
-    //        reutrn child pid in father process
-    auto pid = fork();
-
-    std::cout << "pid: " << pid << std::endl;
-    if (0 > pid) {
-        std::cerr << "fork failed." << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    if (0 == pid) {  // child process
-        std::cout << "child pid: " << getpid()
-            << ", ppid: " << getppid() << std::endl;
-
-        exit(EXIT_SUCCESS);
-    }
-    else {  // father process
-        std::cout << "father pid: " << getpid()
-            << ", ppid: " << getppid() << std::endl;
-    }
-
-    return EXIT_SUCCESS;
-}                                                  
 ```
 
 ### Multi-threading

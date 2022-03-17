@@ -148,6 +148,8 @@ let g:UltiSnipsEditSplit="vertical"
 
 - <C-t> => toggle NERDTree
 
+- :CocInstall coc-marketplace
+
 - :CocList marketplace => install/uninstall package
 
 - :CocInstall / CocUninstall [package name]
