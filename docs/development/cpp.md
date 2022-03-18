@@ -4,7 +4,7 @@
 
 > [Cplusplus Reference](https://www.cplusplus.com/)
 
-
+[toc]
 
 ### Variables
 
@@ -1331,7 +1331,219 @@ auto main() -> int {
 
 ### Multi-process
 
+Parent and child process's fd point to the same file table, sharing the file bias pointer, but reference counter will increase. 
+
+GDB debug multi-process:
+
+    Before `fork()`, using `set follow-fork-mode child` to debug child process;
+                     using `set follow-fork-mode parent` to debug parent process.
+
 ```cpp
+#include <iostream>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+auto main() -> int {
+    try {
+
+        // After fork(), parent and child has their
+        // own *p respectively.
+        auto *p = new int(1);
+
+        // fork() return 0 in child process
+        //        return child pid in parent process
+        auto pid = fork();
+
+        if (0 > pid) { throw "fork error."; }
+        // child process
+        else if (0 == pid) {
+            std::cout << "child pid: " << getpid()
+                << ", parent pid: " << getppid()
+                << std::endl;
+
+            for (; *p < 20; ++(*p)) {
+                std::cout << "child processing "
+                    << *p << " task." << std::endl;
+                sleep(1);
+            }
+
+            // free child's *p
+            free(p);
+            p = nullptr;
+
+            exit(0);
+        }
+
+        // parent process
+        std::cout << "parent pid: " << getpid()
+            << ", parent's parent pid: " << getppid()
+            << std::endl;
+
+        std::cout << "parent suspending, waiting for child process ..." << std::endl;
+        auto status = 0;
+        // parent suspending use wait()
+        //        continue use waitpid()
+        auto ret = wait(&status);
+
+        std::cout << "child process ends, parent collects its resource." << std::endl;
+        // child process status
+        if (-1 == ret) { throw "wait error"; }
+
+        // Normally exit
+        if (WIFEXITED(status)) {
+            // macro WEXITSTATUS to get status code
+            std::cout << "child normally exit: "
+                << WEXITSTATUS(status) << std::endl;
+        }
+        // Exit with exception
+        // e.g. kill -9 pid
+        // use kill -l to list signal can be sent
+        // kill -19 pid to suspend child process
+        // kill -18 pid to continue child process
+        else if (WIFSIGNALED(status)) {
+            // macro WTERMSIG to get
+            // which signal exits child process
+            std::cout << "child exit with exception: "
+                << WTERMSIG(status) << std::endl;
+        }
+        // Stop by what signal
+        else if (WIFSTOPPED(status)) {
+            // macro WSTOPSIG to get
+            // which signal stops child process
+            std::cout << "child stop by: "
+                << WSTOPSIG(status) << std::endl;
+        }
+
+        // free parent's *p
+        free(p);
+        p = nullptr;
+
+        return EXIT_SUCCESS;
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+}
+```
+
+- Orphan process
+
+    Parent process has exited, but child not. The orphan will be adopted by init process (pid 1). Orphan process has few impact.
+
+- Zombie process
+
+    Parent process fails to collect child's resource, which remaining in memory, ocuppying pid. If it has too many zombies, kernel will fail to allocate new process.
+
+    Zombies should use `wait` or `waitpid` to kill.
+
+#### pipe (无名管道)
+
+- 半双工，同一时刻仅有一个方向有数据流动
+- FIFO
+- 无格式数据，要求读写双方实现约定好数据格式
+- 数据一次性读写，读取后即丢弃
+- pipe只在内存中，没有名字，只有公共祖先进程
+- 默认阻塞，读方等待pipe中有数据才读取
+
+Creation:
+
+```cpp
+#include <unistd.h>
+
+// pipefd[0] => read side, default
+// pipefd[1] => write side, default
+//
+// return 0 => success
+//       -1 => failed
+int pipe(int pipefd[2])
+
+// use ulimit -a to check pipe block size
+// name:
+//     _PC_PIPE_BUF => Check buffer size
+//     _PC_NAME_MAX => Check buffer maximun
+long fpathconf(int fd, int name)
+
+// set pipe mode to no block, 
+// if pipe has no data, read() return -1
+//     acquire fd flag
+int flag = fcntl(fd[0], F_GETFL);
+//     set new flag
+flag |= O_NOBLOCK;
+fcntl(fd[0], F_SETFL, flag);
+```
+
+e.g.
+
+```cpp
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <cstring>
+
+#define SIZE 64
+
+auto main() -> int {
+    try {
+        // Create pipe
+        char buffer[SIZE];
+        int fds[2];
+        auto ret = pipe(fds);
+        if (-1 == ret) { throw "pipe creation error."; }
+
+        // Spawn child
+        auto pid = fork();
+        if (pid < 0) { throw "fork error."; }
+
+        // child process: reade side
+        if (0 == pid) {
+            // close write fd
+            close(fds[1]);
+
+            memset(buffer, 0, SIZE);
+            ret = read(fds[0], buffer, SIZE);
+            if (-1 == ret) { throw "read error"; }
+
+            std::cout << "Child read: " << buffer << std::endl;
+
+            // reade ends, close read side
+            close(fds[0]);
+            exit(0);
+        }
+
+        // parent process: write side
+
+        // close read side
+        close(fds[0]);
+
+        memset(buffer, 0, SIZE);
+        std::string buffer1 = "ABCDEFG12345678!@#$%^&*";
+        ret = write(fds[1], buffer1.c_str(), SIZE);
+        if (-1 == ret) { throw "write error"; }
+
+        std::cout << "Parent write: " << buffer1
+            << ", status: " << ret << std::endl;
+
+        // write ends, close write side
+        close(fds[1]);
+
+        // wait child process ends
+        std::cout << "parent suspending, waiting for child process ..." << std::endl;
+
+        // parent suspending use wait()
+        auto status = 0;
+        ret = wait(&status);
+
+        std::cout << "child process ends, parent collects its resource." << std::endl;
+        // child process status
+        if (-1 == ret) { throw "wait error"; }
+
+        return EXIT_SUCCESS;
+    }catch(const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+}
 ```
 
 ### Multi-threading
