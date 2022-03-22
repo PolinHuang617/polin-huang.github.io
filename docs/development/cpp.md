@@ -4,8 +4,6 @@
 
 > [Cplusplus Reference](https://www.cplusplus.com/)
 
-[toc]
-
 ### Variables
 
 #### Fundamental data types
@@ -1543,6 +1541,292 @@ auto main() -> int {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
+}
+```
+
+#### pipe (有名管道)
+
+- 无名管道只能用于有亲缘关系的进程，为了克服这个缺点，有名管道提供了可以根据路径进行关联的使用方式。
+- FIFO，管道文件保存在文件系统中，其中的数据保存在**内存**中。
+- 当有名管道使用完成后，继续保存在文件系统中，以后仍可使用。
+
+Create fifo pipe using linux command:
+
+```bash
+root@Debian11:~/workspace# mkfifo fifo
+root@Debian11:~/workspace# ll
+prw-r--r-- 1 root root    0 Mar 22 12:04 fifo|
+```
+
+```cpp
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <string>
+
+auto main() -> int {
+    try {
+        // Create fifo pipe
+        //
+        // mode_t is like linux normal permission code,
+        // like 0777, 0644
+        // int mkfifo(const char* pathName, mode_t mode)
+        const std::string fifoPipe = "fifo";
+
+        if ( access(fifoPipe.c_str(), F_OK) != -1 )
+            std:: cerr << "FIFO pipe already exsited." << std::endl;
+
+        auto ret = mkfifo(fifoPipe.c_str(), 0644);
+        if (-1 == ret)                                                      std::cerr << "FIFO pipe creation failed." << std::endl;
+        else
+            std::cout << "FIFO pipe created at " << fifoPipe << std::endl;
+                                                                        return EXIT_SUCCESS;                                        }catch(const std::exception &e) {                                   std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+  }                                                           }
+}
+```
+
+Write to pipe
+
+```cpp
+#include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <cstdio>
+#include <cstring>
+
+#define SIZE 256
+
+auto main() -> int {
+    try {
+        char *buffer = new char[SIZE];
+
+        // 1. Create fifo pipe in write-only mode
+        auto fd = open("fifo", O_WRONLY);
+        if (-1 == fd)
+            std::cerr << "Open pipe error." << std::endl;
+        else
+            std::cout << "Open fifo in write-only mode." << std::endl;
+
+        // 2. Write data to pipe
+        int i = 0;
+        while (true) {
+            std::sprintf(buffer, "Hello %d FIFO pipe.", i++);
+            auto ret = write(fd, buffer, std::strlen(buffer));
+            if (-1 == ret) {
+                std::cerr << "Write error." << std::endl;
+                break;
+            }
+
+            std::cout << "Write: " << buffer << std::endl;
+            sleep(1);
+        }
+
+        // 3. Close pipe
+        close(fd);
+        delete[] buffer;
+        buffer = nullptr;
+
+        return EXIT_SUCCESS;
+    }catch(const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+}
+```
+
+Read to FIFO pipe
+
+```cpp
+#include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <cstdio>
+#include <cstring>
+
+#define SIZE 256
+
+auto main() -> int {
+    try {
+        char *buffer = new char[SIZE];
+
+        // 1. Create fifo pipe in read-only mode
+        auto fd = open("fifo", O_RDONLY);
+        if (-1 == fd)
+            std::cerr << "Open pipe error." << std::endl;
+        else
+            std::cout << "Open fifo in read-only mode." << std::endl;
+
+        // 2. Read data to pipe
+        int i = 0;
+        while (true) {
+            auto ret = read(fd, buffer, SIZE);
+            if (-1 == ret) {
+                std::cerr << "Read error." << std::endl;
+                break;
+            }
+
+            std::cout << "Read: " << buffer << std::endl;
+        }
+
+        // 3. Close pipe
+        close(fd);
+        delete[] buffer;
+        buffer = nullptr;
+
+        return EXIT_SUCCESS;
+    }catch(const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+}
+```
+
+Makefile:
+
+```
+all: read write
+
+read: read.cpp
+    g++ $< -o $@
+
+write: write.cpp
+    g++ $< -o $@
+
+.PHONY: clean
+clean:
+    rm -rf read write 
+```
+
+一个以只读方式打开有名管道的进程会阻塞，直到另一个以只写方式打开有名管道的进程打开该管道，反之亦然。
+
+e.g. Chat room
+
+```cpp
+// ClientA
+#include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <cstring>
+#include <cstdio>
+
+#define SIZE 256
+
+auto main() -> int {
+    // 1. open fifo1 in read-only
+    auto fd1 = open("fifo1", O_RDONLY);
+    if (-1 == fd1)
+        std::cerr << "Open fifo1 failed." << std::endl;
+    else
+        std::cout << "Open fifo1 in read-only." << std::endl;
+    // 2. open fifo2 in write-only
+    auto fd2 = open("fifo2", O_WRONLY);
+    if (-1 == fd2)
+        std::cerr << "Open fifo2 failed." << std::endl;
+    else
+        std::cout << "Open fifo2 in write-only." << std::endl;
+
+    // 3. loop
+    auto buffer = new char[SIZE];
+    auto ret = 0;
+    while (true) {
+        //    3.1 read from fifo1
+        std::memset(buffer, 0, SIZE);
+        ret = read(fd1, buffer, SIZE);
+        if (-1 == ret)
+            std::cerr << "Read fifo1 error." << std::endl;
+        else
+            std::cout << "Receive: " << buffer << std::endl;
+
+        //    3.2 write to fifo2
+        std::memset(buffer, 0, SIZE);
+        std::fgets(buffer, SIZE, stdin);
+        // Trim last newline character
+        if ('\n' == buffer[strlen(buffer) - 1])
+            buffer[strlen(buffer) - 1] = '\0';
+
+        ret = write(fd2, buffer, std::strlen(buffer));
+        if (-1 == ret)
+            std::cerr << "Write fifo2 error." << std::endl;
+        else
+            std::cout << "Send: " << buffer << std::endl;
+    }
+
+    // 4. close fifo1 fifo2
+    close(fd1);
+    close(fd2);
+    delete[] buffer;
+    buffer = nullptr;
+
+    return EXIT_SUCCESS;
+}
+
+// ClientB: Write first
+#include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <cstring>
+#include <cstdio>
+
+#define SIZE 256
+
+auto main() -> int {
+    // 1. open fifo1 in write-only
+    auto fd1 = open("fifo1", O_WRONLY);
+    if (-1 == fd1)
+        std::cerr << "Open fifo1 failed." << std::endl;
+    else
+        std::cout << "Open fifo1 in write-only." << std::endl;
+
+    // 2. open fifo2 in read-only
+    auto fd2 = open("fifo2", O_RDONLY);
+    if (-1 == fd2)
+        std::cerr << "Open fifo2 failed." << std::endl;
+    else
+        std::cout << "Open fifo2 in read-only." << std::endl;
+
+    // 3. loop
+    auto buffer = new char[SIZE];
+    auto ret = 0;
+    while (true) {
+        //    3.1 write to fifo1
+        std::memset(buffer, 0, SIZE);
+        std::fgets(buffer, SIZE, stdin);
+        // Trim last newline character
+        if ('\n' == buffer[strlen(buffer) - 1])
+            buffer[strlen(buffer) - 1] = '\0';
+
+        ret = write(fd1, buffer, std::strlen(buffer));
+        if (-1 == ret)
+            std::cerr << "Write fifo1 error." << std::endl;
+        else
+            std::cout << "Send: " << buffer << std::endl;
+
+        //    3.2 read from fifo2
+        std::memset(buffer, 0, SIZE);
+        ret = read(fd2, buffer, SIZE);
+        if (-1 == ret)
+            std::cerr << "Read fifo2 error." << std::endl;
+        else
+            std::cout << "Receive: " << buffer << std::endl;
+    }
+
+    // 4. close fifo1 fifo2
+    close(fd1);
+    close(fd2);
+    delete[] buffer;
+    buffer = nullptr;
+
+    return EXIT_SUCCESS;
 }
 ```
 
