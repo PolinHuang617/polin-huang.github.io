@@ -1830,7 +1830,184 @@ auto main() -> int {
 }
 ```
 
+#### Shared memory-mapping
+
+|Address|Description|
+|:-----:|:---------:|
+|High   |Stack |
+|       |File memory-mapping|
+|       |Heap  |
+|       |bbs data|
+|       |init data|
+|Low    |text data|
+
+Shared memory-mapping is the most effictive and fastest way of IPC (Inter-process communication), Using `mmap`.
+
+```cpp
+int mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+// addr: initial address of memory mapping. Usually NULL, determined by OS.
+// length: mapping length.
+// prot: protection method of memory mapping.
+//       1) read: PROT_READ;
+//       2) write: PROTY_WRITE
+//       3) read/write: PROT_READ | PROTY_WRITE
+// flags:
+//       1) MAP_SHARED: data writed into mapping will copy back to mapped file, allowing other process share this file.
+//       2) MAP_PRIVATE: generate a duplication when data writes into mapping (copy on write).
+// fd: file description returned by open(), that is the mapped file.
+// offset: bias offset from file beginning, 4K times, usually 0 (beginning).
+//
+// return value:
+//       Succeed: mapping initial address.
+//       Failed:  macro MAP_FAILED
+```
+
+e.g.
+
+```cpp
+#include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <cstring>
+#include <sys/mman.h>
+
+auto main() -> int {
+    // Open a file on read-write
+    auto fd = open("txt", O_RDWR);
+    if (-1 == fd)
+        std::cerr << "Open failed." << std::endl;
+
+    // Mapping file to memory
+    auto addr = mmap(nullptr, 1024, PROT_READ | PROT_WRITE,
+            MAP_SHARED, fd, 0);
+    if (MAP_FAILED == addr)
+        std::cerr << "Mapping error." << std::endl;
+
+    std::cout << "File opened." << std::endl;
+
+    // Close file
+    close(fd);
+
+    // Writing to mapping is writing to file
+    memcpy(addr, "0987654321", 10);
+
+    // Unmapping
+    munmap(addr, 1024);
+
+    return EXIT_SUCCESS;
+}
+```
+
+> Notice: file permission.
+
+Parent and child communicate in shared file. But defect is it relies on a real file, which is easy to be alterred.
+
+```cpp
+#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <cstring>
+#include <sys/mman.h>
+
+auto main() -> int {
+    // Open a file on read-write
+    auto fd = open("txt", O_RDWR);
+    if (-1 == fd)
+        std::cerr << "Open failed." << std::endl;
+
+    // Mapping file to memory
+    auto addr = mmap(nullptr, 1024, PROT_READ | PROT_WRITE,
+            MAP_SHARED, fd, 0);
+    if (MAP_FAILED == addr)
+        std::cerr << "Mapping error." << std::endl;
+
+    std::cout << "File opened." << std::endl;
+
+    // Close file
+    close(fd);
+
+    auto pid = fork();
+    if (-1 == pid)
+        std::cerr << "Fork error." << std::endl;
+
+    // Child
+    if (0 == pid) {
+        memcpy(addr, "Hi father.", 10);
+
+        exit(EXIT_SUCCESS);
+    }
+
+    // Parent
+    // Writing to mapping is writing to file
+    // Wait child completed.
+    wait(nullptr);
+    std::cout << "Receive from child: "
+        << static_cast<char*>(addr) << std::endl;
+    memcpy(addr, "Hi son.", 10);
+
+    // Unmapping
+    munmap(addr, 1024);;
+
+    return EXIT_SUCCESS;
+}
+```
+
+Anonymous shared mapping can hide the linked mapping file. It can only use in parent-child process.
+
+```cpp
+#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <cstring>
+#include <sys/mman.h>
+
+auto main() -> int {
+    // Open a anonymous mapping on read-write
+    // Mapping file to memory
+    auto addr = mmap(nullptr, 1024, PROT_READ | PROT_WRITE,
+            MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    if (MAP_FAILED == addr)
+        std::cerr << "Mapping error." << std::endl;
+
+    auto pid = fork();
+    if (-1 == pid)
+        std::cerr << "Fork error." << std::endl;
+
+    // Child
+    if (0 == pid) {
+        memcpy(addr, "Hi father.", 10);
+
+        exit(EXIT_SUCCESS);
+    }
+
+    // Parent
+    // Writing to mapping is writing to file
+    // Wait child completed.
+    wait(nullptr);
+    std::cout << "Receive from child: "
+        << static_cast<char*>(addr) << std::endl;
+    memcpy(addr, "Hi son.", 10);
+
+    // Unmapping
+    munmap(addr, 1024);;
+
+    return EXIT_SUCCESS;
+}
+```
+
 ### Multi-threading
+
+#### `pthread` basic function
+
+
 
 #### `std::thread`
 
