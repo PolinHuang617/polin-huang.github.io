@@ -1,22 +1,56 @@
 ```mermaid
-graph TD;
-A-->B;
-A-->X;
-A-->C;
-B-->D;
-C-->D;
-```
+classDiagram
+    
+class boost_noncopyable
 
-```mermaid
-sequenceDiagram
-    participant 企业
-    participant 下游
-    企业->>移动: 调度
-    loop 心跳检测
-        移动->>移动: SDK
-    end
-    Note right of 移动: 详见文档 <br/>资料
-    移动-->>企业: 接单
-    移动->>下游: 推送
-    下游-->>移动: 流程结束
+Singleton ..|> boost_noncopyable: Realization
+class Singleton~T~ {
+    <<Interface>>
+    -static m_Instance~T*~
+    -static m_Mutex$ mutex
+    +instance()$ ~T~
+    #Singleton()
+}
+
+FileManager ..|> Singleton: Realization
+class FileManager {
+    <<Service>>
+    -static m_DataMap map[filePath: string, data: json]
+    -static m_Mutex mutex
+    +load(filePath: string) bool
+    +dump(inFilePath: string, outFilePath: string) bool
+    +get(filePath: string) json
+    +set(filePath: string, data: json) bool
+    +erase(filePath: string) bool
+}
+
+RedisManager ..|> Singleton: Realization
+class RedisManager {
+    <<Service>>
+    -static map[ip, port]
+    -static mutex
+    +connect(ip, port) bool
+    +close(ip, port) bool
+    +get(key: string) json
+    +set(key: string, value: json)
+    +erase(key: string) bool
+}
+
+SQLManager ..|> Singleton: Realization
+class SQLManager {
+    <<Service>>
+    -static map[ip, port]
+    -static mutex
+    +connect(ip, port) bool
+    +close(ip, port) bool
+    +command(command: string) bool
+}
+
+class RedisManager
+
+class Parser {
+    +csv2Json(vector[vector[string]], json)$ bool
+    +json2CSV(json, vector[vector[string]])$ bool
+}
+
 ```
