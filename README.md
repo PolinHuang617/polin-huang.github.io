@@ -2,6 +2,12 @@
 
 > Environment: Ubuntu 22.04 LTS Server
 
+## Project
+
+### QuantModule
+
+[MindMap](docs/project/QuantModule/MindMap.md)
+
 ## C++
 
 ### BackgroundKnowledge
