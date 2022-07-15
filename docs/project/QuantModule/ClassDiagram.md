@@ -46,7 +46,15 @@ class SQLManager {
     +command(command: string) bool
 }
 
-class RedisManager
+AMQPManager ..|> Singleton: Realization
+class AMQPManager {
+    <<Service>>
+    -static map[ip, port]
+    -static mutex
+    +connect(ip, port) bool
+    +close(ip, port) bool
+    +command(command: string) bool
+}
 
 class Parser {
     +csv2Json(vector[vector[string]], json)$ bool
